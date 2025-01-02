@@ -4,4 +4,4 @@
 *.pkl
 model_ckpt/
 ckpt/
-output/
+outputs/

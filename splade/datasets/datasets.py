@@ -76,16 +76,28 @@ class CollectionDatasetPreLoad(Dataset):
         self.data_dict = {}
         self.line_dict = {}
         print("Preloading dataset")
-        with open(os.path.join(self.data_dir, "raw.tsv")) as reader:
+
+        if data_dir.endswith(".tsv"):
+            data_file = data_dir
+        else:
+            data_file = os.path.join(self.data_dir, "raw.tsv")
+        with open(data_file) as reader:
+            self.idx_to_key = {}
+            cnt = 0
             for i, line in enumerate(tqdm(reader)):
                 if len(line) > 1:
                     id_, *data = line.split("\t")  # first column is id
                     data = " ".join(" ".join(data).splitlines())
                     if self.id_style == "row_id":
-                        self.data_dict[i] = data
-                        self.line_dict[i] = id_.strip()
+                        self.data_dict[id_] = data
+                        self.idx_to_key[i] = id_
+                        # self.line_dict[i] = id_.strip()
+                        # self.data_dict[i] = data
                     else:
                         self.data_dict[id_] = data.strip()
+                    cnt += 1
+                if cnt > 500:
+                    break
         self.nb_ex = len(self.data_dict)
 
     def __len__(self):
@@ -93,9 +105,16 @@ class CollectionDatasetPreLoad(Dataset):
 
     def __getitem__(self, idx):
         if self.id_style == "row_id":
-            return self.line_dict[idx], self.data_dict[idx]
+            true_idx = self.idx_to_key[idx]
+            return idx, self.data_dict[true_idx]
+            # return self.line_dict[idx], self.data_dict[idx]
         else:
+            print(idx)
+            print(type(idx))
+            print(str(idx))
             return str(idx), self.data_dict[str(idx)]
+        
+        
 
 
 class BeirDataset(Dataset):
