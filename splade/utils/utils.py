@@ -162,7 +162,7 @@ def get_initialize_config(exp_dict: DictConfig, train=False):
         OmegaConf.save(config=exp_dict, f=os.path.join(exp_dict.config.checkpoint_dir, "config.yaml"))
         model_training_config = None
     else:
-        if config.pretrained_no_yamlconfig:
+        if config["pretrained_no_yamlconfig"]:
             model_training_config = config
         else:
             model_training_config = OmegaConf.load(os.path.join(config["checkpoint_dir"], "config.yaml"))["config"]

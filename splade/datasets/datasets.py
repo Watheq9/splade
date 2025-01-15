@@ -96,8 +96,8 @@ class CollectionDatasetPreLoad(Dataset):
                     else:
                         self.data_dict[id_] = data.strip()
                     cnt += 1
-                if cnt > 500:
-                    break
+                # if cnt > 500:
+                #     break
         self.nb_ex = len(self.data_dict)
 
     def __len__(self):

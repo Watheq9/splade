@@ -9,7 +9,8 @@ from splade.evaluation.eval import load_and_evaluate
 from splade.utils.utils import get_dataset_name
 from splade.utils.hydra import hydra_chdir
 
-@hydra.main(config_path=CONFIG_PATH, config_name=CONFIG_NAME,version_base="1.2")
+# @hydra.main(config_path=CONFIG_PATH, config_name=CONFIG_NAME,version_base="1.2")
+@hydra.main(config_path=CONFIG_PATH, config_name=CONFIG_NAME)
 def evaluate(exp_dict: DictConfig):
 
     # for dataset EVAL_QREL_PATH
