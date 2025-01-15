@@ -16,10 +16,10 @@ def evaluate(exp_dict: DictConfig):
     # for dataset EVAL_QREL_PATH
     # for metric of this qrel
     hydra_chdir(exp_dict)
-    eval_qrel_path = exp_dict.data.EVAL_QREL_PATH
-    eval_metric = exp_dict.config.eval_metric
-    dataset_names = exp_dict.config.retrieval_name
-    out_dir = exp_dict.config.out_dir
+    eval_qrel_path = exp_dict["data"]["EVAL_QREL_PATH"]
+    eval_metric = exp_dict["config"]["eval_metric"]
+    dataset_names = exp_dict["config"]["retrieval_name"]
+    out_dir = exp_dict["config"]["out_dir"]
 
     res_all_datasets = {}
     for i, (qrel_file_path, eval_metrics, dataset_name) in enumerate(zip(eval_qrel_path, eval_metric, dataset_names)):

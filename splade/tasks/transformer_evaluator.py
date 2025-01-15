@@ -140,7 +140,7 @@ class SparseRetrieval(Evaluator):
         if self.compute_stats:
             self.l0 = L0()
 
-    def retrieve(self, q_loader, top_k, name=None, return_d=False, id_dict=False, threshold=0):
+    def retrieve(self, q_loader, top_k, name=None, return_d=False, id_dict=False, threshold=0, save_run=False):
         makedir(self.out_dir)
         if self.compute_stats:
             makedir(os.path.join(self.out_dir, "stats"))
@@ -173,7 +173,8 @@ class SparseRetrieval(Evaluator):
                     res[str(q_id)][str(self.doc_ids[id_])] = float(sc)
         if self.compute_stats:
             stats = {key: value / len(q_loader) for key, value in stats.items()}
-        if self.compute_stats:
+        
+        if save_run and self.compute_stats:
             with open(os.path.join(self.out_dir, "stats",
                                    "q_stats{}.json".format("_iter_{}".format(name) if name is not None else "")),
                       "w") as handler:
@@ -183,14 +184,17 @@ class SparseRetrieval(Evaluator):
                                        "d_stats{}.json".format("_iter_{}".format(name) if name is not None else "")),
                           "w") as handler:
                     json.dump(self.doc_stats, handler)
-        with open(os.path.join(self.out_dir, "run{}.json".format("_iter_{}".format(name) if name is not None else "")),
-                  "w") as handler:
-            json.dump(res, handler)
+        run_path = os.path.join(self.out_dir, "run{}.json".format("_{}".format(name) if name is not None else ""))
+        if save_run:
+            with open(run_path, "w") as handler:
+                json.dump(res, handler)
         if return_d:
             out = {"retrieval": res}
             if self.compute_stats:
                 out["stats"] = stats if self.doc_stats is None else {**stats, **self.doc_stats}
             return out
+        return res
+    
 
 
 class EncodeAnserini(Evaluator):

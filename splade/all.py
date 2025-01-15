@@ -4,7 +4,7 @@ from omegaconf import DictConfig
 from conf.CONFIG_CHOICE import CONFIG_NAME, CONFIG_PATH
 from .flops import flops
 from .index import index
-from .retrieve import retrieve_evaluate
+from .retrieve import retrieve
 from .train import train
 from .utils.hydra import hydra_chdir
 from .utils.index_figure import index_figure
@@ -16,7 +16,7 @@ def train_index_retrieve(exp_dict: DictConfig):
 
     train(exp_dict)
     index(exp_dict)
-    retrieve_evaluate(exp_dict)
+    retrieve(exp_dict)
     flops(exp_dict)
     index_figure(exp_dict)
 
