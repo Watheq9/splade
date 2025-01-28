@@ -140,18 +140,18 @@ class SparseRetrieval(Evaluator):
         if self.compute_stats:
             self.l0 = L0()
 
-    def retrieve(self, q_loader, top_k, name=None, return_d=False, id_dict=False, threshold=0, save_run=False):
+    def retrieve(self, q_loader, top_k, name=None, return_d=False, query_idx_to_key=False, threshold=0, save_run=False):
         makedir(self.out_dir)
-        if self.compute_stats:
+        if save_run and self.compute_stats:
             makedir(os.path.join(self.out_dir, "stats"))
         res = defaultdict(dict)
         if self.compute_stats:
             stats = defaultdict(float)
         with torch.no_grad():
             for t, batch in enumerate(tqdm(q_loader)):
-                q_id = to_list(batch["id"])[0]
-                if id_dict:
-                    q_id = id_dict[q_id]
+                q_idx = to_list(batch["id"])[0]
+                if query_idx_to_key:
+                    q_id = query_idx_to_key[q_idx]
                 inputs = {k: v for k, v in batch.items() if k not in {"id"}}
                 for k, v in inputs.items():
                     inputs[k] = v.to(self.device)

@@ -74,7 +74,7 @@ def retrieve(exp_dict: DictConfig):
                                     max_length=model_training_config["max_length"], batch_size=batch_size_q,
                                     shuffle=False, num_workers=1)
     evaluator = SparseRetrieval(config=config, model=model, compute_stats=True, dim_voc=model.output_dim, is_beir=True)
-    evaluator.retrieve(q_loader, top_k=exp_dict["config"]["top_k"] + 1, id_dict=q_collection.idx_to_key)
+    evaluator.retrieve(q_loader, top_k=exp_dict["config"]["top_k"] + 1, query_idx_to_key=q_collection.idx_to_key)
 
     with open(os.path.join(config.out_dir, "run.json")) as reader:
         run = json.load(reader)

@@ -13,7 +13,7 @@ from .utils.utils import get_dataset_name, get_initialize_config
 
 
 
-def convert_ranking_to_trec(retr_res, idx_to_key, run_path, tag='splade'):
+def convert_ranking_to_trec(retr_res, doc_idx_to_key, run_path, tag='splade'):
 
     output = ""
     for qid in retr_res.keys():
@@ -23,8 +23,9 @@ def convert_ranking_to_trec(retr_res, idx_to_key, run_path, tag='splade'):
         rank = 1
         for (doc_idx, score) in doc_list:
             doc_idx = int(doc_idx)
-            docno = idx_to_key[doc_idx]
-            line = f"{str(qid)}\tQ0\t{docno}\t{rank}\t{score}\t{tag}"
+            docno = doc_idx_to_key[doc_idx]
+            # qid = query_idx_to_key[query_idx]
+            line = f"{qid}\tQ0\t{docno}\t{rank}\t{score}\t{tag}"
             output += line + "\n"
             rank += 1
 
@@ -50,24 +51,30 @@ def retrieve(exp_dict: DictConfig):
        init_dict.model_type_or_dir=os.path.join(config.checkpoint_dir,"model")
        init_dict.model_type_or_dir_q=os.path.join(config.checkpoint_dir,"model/query") if init_dict.model_type_or_dir_q else None
 
+    batch_size = 1
+    # NOTE: batch_size is set to 1, currently no batched implementation for retrieval (TODO)
 
     model = get_model(config, init_dict)
-    d_collection = CollectionDatasetPreLoad(data_dir=exp_dict["data"]["COLLECTION_PATH"], id_style=id_style)
-    idx_to_key = d_collection.idx_to_key
 
-    batch_size = 1
-    # NOTE: batch_size is set to 1, currently no batched implem for retrieval (TODO)
-    for data_dir, retrieval_name in zip(exp_dict["data"]["Q_COLLECTION_PATH"], exp_dict["config"]['retrieval_name']):
-        q_collection = CollectionDatasetPreLoad(data_dir=data_dir, id_style=id_style)
-        q_loader = CollectionDataLoader(dataset=q_collection, tokenizer_type=model_training_config["tokenizer_type"],
-                                        max_length=model_training_config["max_length"], batch_size=batch_size,
-                                        shuffle=False, num_workers=1)
-        evaluator = SparseRetrieval(config=config, model=model, compute_stats=True, dim_voc=model.output_dim)
-        retr_res = evaluator.retrieve(q_loader, top_k=exp_dict["config"]["top_k"], id_dict=q_collection.idx_to_key,
-                           name=retrieval_name, threshold=exp_dict["config"]["threshold"])
+    corpus_file = exp_dict["data"]["COLLECTION_PATH"]
+    query_file = exp_dict["data"]["Q_COLLECTION_PATH"]
+    retrieval_name = exp_dict["config"]['retrieval_name']
 
-        run_path = os.path.join(config['out_dir'], f"{retrieval_name}_{splade_model}.tsv")
-        convert_ranking_to_trec(retr_res, idx_to_key, run_path, tag='splade')
+    d_collection = CollectionDatasetPreLoad(data_dir=corpus_file, id_style=id_style)
+    doc_idx_to_key = d_collection.idx_to_key
+
+    q_collection = CollectionDatasetPreLoad(data_dir=query_file, id_style=id_style)
+    query_idx_to_key = q_collection.idx_to_key
+
+    q_loader = CollectionDataLoader(dataset=q_collection, tokenizer_type=model_training_config["tokenizer_type"],
+                                    max_length=model_training_config["max_length"], batch_size=batch_size,
+                                    shuffle=False, num_workers=1)
+    evaluator = SparseRetrieval(config=config, model=model, compute_stats=True, dim_voc=model.output_dim)
+    retr_res = evaluator.retrieve(q_loader, top_k=exp_dict["config"]["top_k"], query_idx_to_key=query_idx_to_key,
+                                name=retrieval_name, threshold=exp_dict["config"]["threshold"])
+
+    run_path = os.path.join(config['out_dir'], f"{retrieval_name}.tsv")
+    convert_ranking_to_trec(retr_res, doc_idx_to_key, run_path, tag=splade_model)
 
 
 
